@@ -9,6 +9,7 @@ from flask_cors import CORS, cross_origin
 from extract_text_wordpdf import extract_doc, process_pdf, extract_text_from_txt, extract_text_from_image, extract_text_from_csv, extract_text_from_xlsx, extract_text_from_html
 from extract_emailbody import read_email
 from extractmsg import extract_text_from_msg
+from extract_msg_body import read_email_content
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -100,9 +101,9 @@ def parse_email(eml_file_name, output_folder_path='email_attachments'):
                 image_text = extract_text_from_image(file_path)
                 parsed_attachments.append({'filename': file_name, 'filetype': filetype, 'content': image_text if image_text else 'Poor quality image or invalid attachment'})
 
-            elif file_name.endswith('-000'):
+            elif file_name.startswith('part-000'):
                 print(f"Extracting text from MSG file: {file_name}")
-                msg_text = extract_text_from_msg(file_path)
+                msg_text = read_email_content(file_path)
                 parsed_attachments.append({'filename': file_name, 'filetype': filetype, 'content': msg_text if msg_text else 'Invalid attachment'})
 
             else:
