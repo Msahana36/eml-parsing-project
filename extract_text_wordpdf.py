@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from msrest.authentication import CognitiveServicesCredentials
-import extract_msg
+from extract_msg import Message
 import time
 from dotenv import load_dotenv
 load_dotenv()
@@ -143,20 +143,3 @@ def process_pdf(file_path):
             print("Sorry, the image quality is not sufficient for text extraction. Please try again with a clearer image.")
             return ""
         
-        
-
-def extract_text_from_msg(file_path):
-    """Extract text content from an MSG file."""
-    try:
-        msg = extract_msg.Message(file_path)
-        return {
-            "Subject": msg.subject,
-            "From": msg.sender,
-            "To": msg.to,
-            "Date": msg.date,
-            "Body": msg.body,
-            "Attachments": [attachment.longFilename if attachment.longFilename else attachment.shortFilename for attachment in msg.attachments]
-        }
-    except Exception as e:
-        print(f"Error extracting details from MSG: {e}")
-        return {"error": "Invalid attachment or MSG file."}

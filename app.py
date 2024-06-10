@@ -4,9 +4,10 @@ import email.header
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
-from extract_text_wordpdf import extract_doc, process_pdf, extract_text_from_txt, extract_text_from_image, extract_text_from_csv, extract_text_from_xlsx, extract_text_from_html,extract_text_from_msg
+from extract_text_wordpdf import extract_doc, process_pdf, extract_text_from_txt, extract_text_from_image, extract_text_from_csv, extract_text_from_xlsx, extract_text_from_html
 from extract_emailbody import read_email
 import eml_parser
+from extractmsg import extract_text_from_msg
 
 
 def json_serial(obj):
@@ -36,16 +37,15 @@ def parse_email(eml_file_name, output_folder_path='email_attachments'):
         print(f'Parsing: {eml_file_name}')
         m = ep.decode_email(eml_file_name)
         attachments = []
-        
-        #For regular attachments
+    
         if 'attachment' in m:
             for a in m['attachment']:
                 out_filepath = os.path.join(output_folder_path, a['filename'])
                 print(f'\tWriting attachment: {out_filepath}')
                 with open(out_filepath, 'wb') as a_out:
                     a_out.write(base64.b64decode(a['raw']))
-            attachments.append({'filename': a['filename'], 'path': out_filepath})
-        print('Regular attachments extracted')
+                attachments.append({'filename': a['filename'], 'path': out_filepath})
+            print('Regular attachments extracted')
             
             
         return attachments
@@ -57,8 +57,11 @@ def parse_email(eml_file_name, output_folder_path='email_attachments'):
     parsed_attachments = []
     for attachment in attachments:
         file_path = attachment['path']
+        print(f'Parsing file path: {file_path}')
         file_name = attachment['filename']
+        print(f'Parsing file name: {file_name}')
         filetype = os.path.splitext(file_name)[1][1:].lower()
+        print (f'File type: {filetype}')
         
         try:
             if file_name.endswith('.docx'):
@@ -96,11 +99,13 @@ def parse_email(eml_file_name, output_folder_path='email_attachments'):
                 image_text = extract_text_from_image(file_path)
                 parsed_attachments.append({'filename': file_name, 'filetype': filetype, 'content': image_text if image_text else 'Poor quality image or invalid attachment'})
             
-            elif file_name.endswith('.msg'):
-                print(f"Extracting text from msg file: {file_name}")
+        
+            elif 'part-000' in file_name:
+                print(f"Extracting text from MSG file: {file_name}")
                 msg_text = extract_text_from_msg(file_path)
-                parsed_attachments.append({'filename': file_name, 'filetype': filetype, 'content': msg_text if msg_text else 'Invalid attachment'})   
-            
+                parsed_attachments.append({'filename': file_name, 'filetype': filetype, 'content': msg_text if msg_text else 'Invalid attachment'})
+
+        
             else:
                 print(f"Unsupported file format: {file_name}")
                 parsed_attachments.append({'filename': file_name, 'filetype': filetype, 'content': 'Invalid attachment'})
@@ -108,6 +113,7 @@ def parse_email(eml_file_name, output_folder_path='email_attachments'):
         except Exception as e:
             print(f"Error parsing {file_name}: {e}")
             parsed_attachments.append({'filename': file_name, 'filetype': filetype, 'content': 'Invalid attachment'})
+            
     
     email_details = read_email(eml_file_name)
     
@@ -116,7 +122,6 @@ def parse_email(eml_file_name, output_folder_path='email_attachments'):
         
     email_details['Attachments'] = parsed_attachments if parsed_attachments else []
     
-
     print(f"Read email details: {email_details}")
     print(f"Parsed document text: {parsed_attachments}")
     
