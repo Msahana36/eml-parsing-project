@@ -206,9 +206,9 @@ def extract_text_from_msg(file_path):
                 continue
             
             attachment_info = {
-                "Filename": file_name,
-                "Content": extract_text_from_attachment(attachment),
-                "FileType": file_extension[1:]
+                "filename": file_name,
+                "content": extract_text_from_attachment(attachment),
+                "filetype": file_extension[1:]
             }
             attachments.append(attachment_info)
 
