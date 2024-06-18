@@ -165,6 +165,13 @@ def upload_file():
         file.save(pdf_file_name)
         result = process_pdf(pdf_file_name)
         return jsonify({"result": result})
+    
+    elif file and file.filename.endswith('.doc'):
+        doc_file_name = os.path.join('uploaded', file.filename)
+        os.makedirs('uploaded', exist_ok=True)
+        file.save(doc_file_name)
+        result = extract_text_from_doc(pdf_file_name)
+        return jsonify({"result": result})
 
     else:
         return jsonify({"error": "Unsupported file type"})
