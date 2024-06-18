@@ -10,6 +10,7 @@ from extract_text_wordpdf import extract_doc, process_pdf, extract_text_from_txt
 from extract_emailbody import read_email
 from extractmsg import extract_text_from_msg
 from extract_msg_body import read_email_content
+from extract_text_from_doc import extract_text_from_doc
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -68,9 +69,14 @@ def parse_email(eml_file_name, output_folder_path='email_attachments'):
         try:
             if file_name.endswith('.docx'):
                 print(f"Extracting text from docx file: {file_name}")
-                doc_text = extract_doc(file_path)
+                docx_text = extract_doc(file_path)
+                parsed_attachments.append({'filename': file_name, 'filetype': filetype, 'content': docx_text if docx_text else 'Invalid attachment'})
+            
+            elif file_name.endswith('.doc'):
+                print(f"Extracting text from doc file: {file_name}")
+                doc_text = extract_text_from_doc(file_path)
                 parsed_attachments.append({'filename': file_name, 'filetype': filetype, 'content': doc_text if doc_text else 'Invalid attachment'})
-
+            
             elif file_name.endswith('.pdf'):
                 print(f"Extracting text from pdf file: {file_name}")
                 pdf_text = process_pdf(file_path)
