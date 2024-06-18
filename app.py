@@ -170,7 +170,7 @@ def upload_file():
         doc_file_name = os.path.join('uploaded', file.filename)
         os.makedirs('uploaded', exist_ok=True)
         file.save(doc_file_name)
-        result = extract_text_from_doc(pdf_file_name)
+        result = extract_text_from_doc(doc_file_name)
         return jsonify({"result": result})
 
     else:
